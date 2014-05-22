@@ -53,9 +53,8 @@ import (
 
 // The zero of Barrier is a ready-to-use value
 type Barrier struct {
-	channel  chan struct{}
-	o        sync.Once
-	initOnce sync.Once
+	channel            chan struct{}
+	initOnce, fallOnce sync.Once
 }
 
 func (b *Barrier) init() {
@@ -68,7 +67,7 @@ func (b *Barrier) init() {
 // by `b.Barrier()` to become closed (permanently available for immediate reading)
 func (b *Barrier) Fall() {
 	b.init()
-	b.o.Do(func() { close(b.channel) })
+	b.fallOnce.Do(func() { close(b.channel) })
 }
 
 // When `b.Fall()` is called, the channel returned by Barrier() is closed
