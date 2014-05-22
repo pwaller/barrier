@@ -2,30 +2,50 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// A barrier primitive which can be used to signal a permanent state change,
+// for example to signal that shutdown should occur.
+//
+// Example:
+//
+//	func main() {
+//		var b barrier.Barrier
+//		go func() {
+//			defer b.Fall()
+//			println("GO!")
+//			// When the goroutine returns, the barrier can be passed.
+//		}
+//		<-b.Barrier()
+//	}
+//
 package barrier
 
 import (
 	"sync"
 )
 
+// The zero of Barrier is a ready-to-use value
 type Barrier struct {
-	channel chan struct{}
-	o       sync.Once
-	init    sync.Once
+	channel  chan struct{}
+	o        sync.Once
+	initOnce sync.Once
 }
 
-func (b *Barrier) Init() {
-	b.init.Do(func() {
+func (b *Barrier) init() {
+	b.initOnce.Do(func() {
 		b.channel = make(chan struct{})
 	})
 }
 
+// `Fall()` can be called any number of times and causes the channel returned
+// by `Barrier()` to become
 func (b *Barrier) Fall() {
-	b.Init()
+	b.init()
 	b.o.Do(func() { close(b.channel) })
 }
 
+// When `b.Fall()` is called, the channel returned by Barrier() becomes
+// always readable.
 func (b *Barrier) Barrier() <-chan struct{} {
-	b.Init()
+	b.init()
 	return b.channel
 }
