@@ -61,15 +61,15 @@ func (b *Barrier) init() {
 	})
 }
 
-// `Fall()` can be called any number of times and causes the channel returned
-// by `Barrier()` to become
+// `b.Fall()` can be called any number of times and causes the channel returned
+// by `b.Barrier()` to become closed (permanently available for immediate reading)
 func (b *Barrier) Fall() {
 	b.init()
 	b.o.Do(func() { close(b.channel) })
 }
 
-// When `b.Fall()` is called, the channel returned by Barrier() becomes
-// always readable.
+// When `b.Fall()` is called, the channel returned by Barrier() is closed
+// (and becomes always readable)
 func (b *Barrier) Barrier() <-chan struct{} {
 	b.init()
 	return b.channel
