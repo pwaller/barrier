@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// golang-nuts mailing list discussion:
+// https://groups.google.com/d/topic/golang-nuts/RBQjg6YOiWA/discussion
+//
 // A barrier primitive which can be used to signal a permanent state change,
 // for example to signal that shutdown should occur.
 //
