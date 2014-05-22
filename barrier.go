@@ -55,6 +55,10 @@ import (
 type Barrier struct {
 	channel            chan struct{}
 	initOnce, fallOnce sync.Once
+
+	// An optional hook, which if set, is called exactly once when the first
+	// b.Fall() is invoked.
+	FallHook func()
 }
 
 func (b *Barrier) init() {
@@ -67,7 +71,12 @@ func (b *Barrier) init() {
 // by `b.Barrier()` to become closed (permanently available for immediate reading)
 func (b *Barrier) Fall() {
 	b.init()
-	b.fallOnce.Do(func() { close(b.channel) })
+	b.fallOnce.Do(func() {
+		if b.FallHook != nil {
+			b.FallHook()
+		}
+		close(b.channel)
+	})
 }
 
 // When `b.Fall()` is called, the channel returned by Barrier() is closed
